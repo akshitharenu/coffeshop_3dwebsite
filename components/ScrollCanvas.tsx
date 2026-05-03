@@ -85,7 +85,7 @@ export default function ScrollCanvas({ progress }: ScrollCanvasProps) {
           ctx.fillStyle = '#000000';
           ctx.fillRect(0, 0, cW, cH);
 
-          // "contain" fit — preserves native sharpness, no upscale distortion
+          // "cover" fit with a slight zoom to crop out the Veo watermark
           const imgRatio    = img.naturalWidth  / img.naturalHeight;
           const canvasRatio = cW / cH;
 
@@ -104,9 +104,26 @@ export default function ScrollCanvas({ progress }: ScrollCanvasProps) {
             offsetY = (cH - drawH) / 2;
           }
 
+          // Apply a 12% zoom to push the watermark off the canvas
+          const zoom = 1.12;
+          const zw = drawW * zoom;
+          const zh = drawH * zoom;
+          const zx = offsetX - (zw - drawW) / 2;
+          const zy = offsetY - (zh - drawH) / 2;
+
           ctx.imageSmoothingEnabled = true;
           ctx.imageSmoothingQuality = 'high';
-          ctx.drawImage(img, offsetX, offsetY, drawW, drawH);
+          ctx.drawImage(img, zx, zy, zw, zh);
+
+          // As an extra fallback, draw a black fade over the bottom right corner
+          const gradient = ctx.createRadialGradient(
+            zx + zw, zy + zh, 0, 
+            zx + zw, zy + zh, Math.max(zw, zh) * 0.15
+          );
+          gradient.addColorStop(0, 'rgba(0,0,0,1)');
+          gradient.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.fillStyle = gradient;
+          ctx.fillRect(zx + zw - (zw * 0.2), zy + zh - (zh * 0.2), zw * 0.2, zh * 0.2);
         }
       }
 
@@ -142,23 +159,24 @@ export default function ScrollCanvas({ progress }: ScrollCanvasProps) {
         </div>
       )}
 
-      {/* Canvas — positioned fixed so it always fills the viewport exactly */}
+      {/* Canvas — sticky inside the hero wrapper; sections below occlude it */}
       <canvas
         ref={canvasRef}
-        style={{ position: 'fixed', top: 0, left: 0, zIndex: 0, display: 'block' }}
+        style={{ position: 'sticky', top: 0, left: 0, zIndex: 0, display: 'block', width: '100%', height: '100vh' }}
       />
 
       {/* Scroll cue */}
       <motion.div
         style={{ opacity: useTransform(progress, [0, 0.08], [1, 0]) }}
-        className="fixed bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 text-white/50 pointer-events-none z-10"
+        className="fixed bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 pointer-events-none z-10"
       >
-        <span className="text-[10px] tracking-[0.3em] uppercase font-medium">Scroll to Explore</span>
-        <div className="h-12 w-6 rounded-full border border-white/20 flex justify-center pt-2">
+        <span className="text-[10px] tracking-[0.3em] uppercase font-medium" style={{ color: 'var(--text-muted)' }}>Scroll to Explore</span>
+        <div className="h-12 w-6 rounded-full flex justify-center pt-2" style={{ border: '1px solid rgba(200,169,110,0.25)' }}>
           <motion.div
             animate={{ y: [0, 18, 0] }}
             transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut' }}
-            className="h-1.5 w-1.5 rounded-full bg-white/70"
+            className="h-1.5 w-1.5 rounded-full"
+            style={{ background: 'var(--gold)' }}
           />
         </div>
       </motion.div>

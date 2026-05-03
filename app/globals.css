@@ -1,85 +1,183 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
+/* ═══ DESIGN TOKENS ═══════════════════════════════════════════════════ */
 :root {
-  --bg-primary: #0a0a0a;
-  --bg-secondary: #111111;
-  --bg-card: #161616;
-  --accent: #c8a97e;
-  --accent-light: #e8d5b5;
-  --text-primary: #ffffff;
-  --text-secondary: rgba(255,255,255,0.6);
-  --text-muted: rgba(255,255,255,0.35);
-  --border: rgba(255,255,255,0.08);
+  --bg:        #08070a;
+  --bg2:       #0f0d12;
+  --bg3:       #151219;
+  --gold:      #c8a96e;
+  --gold-lt:   #e8cfa0;
+  --text:      #e8e0d0;
+  --text-muted:#9a8f7e;
+  --border:    rgba(200,169,110,0.18);
+  --ff-head:   var(--font-cinzel), 'Cinzel', serif;
+  --ff-body:   var(--font-cormorant), 'Cormorant Garamond', serif;
+  --ff-ui:     var(--font-inter), 'Inter', sans-serif;
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+/* ═══ RESETS ═══════════════════════════════════════════════════════════ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-html {
-  scroll-behavior: smooth;
-}
+html { scroll-behavior: smooth; }
 
 body {
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--ff-ui);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
-.font-display {
-  font-family: 'Playfair Display', serif;
-}
+/* ═══ TYPOGRAPHY UTILITIES ════════════════════════════════════════════ */
+.font-head  { font-family: var(--ff-head); }
+.font-body  { font-family: var(--ff-body); }
+.font-ui    { font-family: var(--ff-ui);   }
 
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 5px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(200, 169, 126, 0.3);
-  border-radius: 10px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(200, 169, 126, 0.5);
-}
+/* Legacy compat — keep .font-display mapped to Cinzel now */
+.font-display { font-family: var(--ff-head); }
 
-/* Animations */
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-}
-
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 20px rgba(200, 169, 126, 0.1); }
-  50% { box-shadow: 0 0 40px rgba(200, 169, 126, 0.2); }
-}
-
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 3s ease-in-out infinite;
-}
-
-/* Gradient text */
+/* ═══ GRADIENT TEXT ═══════════════════════════════════════════════════ */
 .gradient-text {
-  background: linear-gradient(135deg, #c8a97e 0%, #e8d5b5 50%, #c8a97e 100%);
+  background: linear-gradient(135deg, var(--gold) 0%, #fff 50%, var(--gold) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* Divider */
-.divider-line {
-  width: 60px;
+/* ═══ GRAIN OVERLAY ══════════════════════════════════════════════════ */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("https://grainy-gradients.vercel.app/noise.svg");
+  opacity: 0.04;
+  z-index: 9999;
+  mix-blend-mode: overlay;
+}
+
+/* ═══ SCROLLBAR ══════════════════════════════════════════════════════ */
+::-webkit-scrollbar       { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 20px; }
+
+/* ═══ SCROLL-REVEAL ANIMATION ════════════════════════════════════════ */
+.sr {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.sr.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger children delays */
+.sr-d1 { transition-delay: 0.1s; }
+.sr-d2 { transition-delay: 0.2s; }
+.sr-d3 { transition-delay: 0.3s; }
+.sr-d4 { transition-delay: 0.4s; }
+.sr-d5 { transition-delay: 0.5s; }
+.sr-d6 { transition-delay: 0.6s; }
+
+/* ═══ SECTION LABEL ══════════════════════════════════════════════════ */
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-family: var(--ff-ui);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 28px;
+}
+.section-label::before {
+  content: "";
+  display: inline-block;
+  width: 32px;
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  background: var(--gold);
+}
+
+/* ═══ GOLD RULE ══════════════════════════════════════════════════════ */
+.gold-rule {
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0.3;
+}
+
+/* ═══ MENU CARD ══════════════════════════════════════════════════════ */
+.menu-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px 28px;
+  transition: transform 0.5s cubic-bezier(0.22,1,0.36,1),
+              border-color 0.4s ease,
+              box-shadow 0.4s ease;
+}
+.menu-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(200,169,110,0.45);
+  box-shadow: 0 20px 60px rgba(200,169,110,0.08);
+}
+
+/* ═══ PILL BADGE ═════════════════════════════════════════════════════ */
+.pill {
+  display: inline-block;
+  font-family: var(--ff-ui);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 5px 14px;
+  border-radius: 999px;
+  background: var(--gold);
+  color: var(--bg);
+}
+
+/* ═══ FLOAT ANIMATION ════════════════════════════════════════════════ */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-14px); }
+}
+.animate-float { animation: float 6s ease-in-out infinite; }
+
+/* ═══ NAV LINK UNDERLINE ═════════════════════════════════════════════ */
+.nav-link {
+  position: relative;
+  font-family: var(--ff-ui);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.35s ease;
+}
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 0;
+  height: 1px;
+  background: var(--gold);
+  transition: width 0.35s ease;
+}
+.nav-link:hover {
+  color: var(--gold);
+}
+.nav-link:hover::after {
+  width: 100%;
+}
+
+/* ═══ RESPONSIVE HELPERS ═════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .section-label { font-size: 10px; }
 }
