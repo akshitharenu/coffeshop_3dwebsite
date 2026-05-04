@@ -9,7 +9,7 @@ interface ScrollCanvasProps {
   progress: MotionValue<number>;
 }
 
-export default function ScrollCanvas({ progress }: ScrollCanvasProps) {
+export default function ScrollCanvas({ progress, onLoaded }: ScrollCanvasProps & { onLoaded?: (pct: number) => void }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imagesRef = useRef<(HTMLImageElement | null)[]>([]);
   const rafRef = useRef<number | null>(null);
@@ -19,29 +19,32 @@ export default function ScrollCanvas({ progress }: ScrollCanvasProps) {
 
   // ── Preload all frames ────────────────────────────────────────────────
   useEffect(() => {
+    if (allLoaded) return;
     let count = 0;
     imagesRef.current = new Array(FRAME_COUNT).fill(null);
 
     for (let i = 0; i < FRAME_COUNT; i++) {
       const img = new Image();
       img.decoding = 'async';
-      img.src = `/sequence/frame_${i}.jpg`;
       const idx = i;
       img.onload = () => {
         imagesRef.current[idx] = img;
         count++;
         setLoadedCount(count);
+        onLoaded?.(Math.round((count / FRAME_COUNT) * 100));
         if (count === FRAME_COUNT) setAllLoaded(true);
       };
       img.onerror = () => {
         count++;
+        onLoaded?.(Math.round((count / FRAME_COUNT) * 100));
         if (count === FRAME_COUNT) setAllLoaded(true);
       };
+      img.src = `/sequence/frame_${i}.jpg`;
     }
     return () => {
       imagesRef.current.forEach((img) => { if (img) img.onload = null; });
     };
-  }, []);
+  }, [onLoaded]);
 
   // ── Resize canvas to exactly fill the window ──────────────────────────
   const resize = useCallback(() => {
@@ -143,22 +146,6 @@ export default function ScrollCanvas({ progress }: ScrollCanvasProps) {
 
   return (
     <>
-      {/* Loading overlay */}
-      {!allLoaded && (
-        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black">
-          <div className="h-10 w-10 rounded-full border-t-2 border-b-2 border-white/80 animate-spin" />
-          <p className="mt-5 text-[11px] font-medium tracking-[0.3em] text-white/50 uppercase">
-            Loading {loadPct}%
-          </p>
-          <div className="mt-4 h-px w-52 bg-white/10 overflow-hidden">
-            <div
-              className="h-full bg-white/80 transition-all duration-150"
-              style={{ width: `${loadPct}%` }}
-            />
-          </div>
-        </div>
-      )}
-
       {/* Canvas — sticky inside the hero wrapper; sections below occlude it */}
       <canvas
         ref={canvasRef}

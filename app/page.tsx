@@ -42,6 +42,16 @@ const stats = [
 export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [loadPct, setLoadPct] = useState(0);
+  const [showSkip, setShowSkip] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (loadPct < 100) setShowSkip(true);
+    }, 4000);
+    return () => clearTimeout(timer);
+  }, [loadPct]);
 
   const { scrollYProgress } = useScroll({ target: containerRef, offset: ['start start', 'end end'] });
   const textProgress = useSpring(scrollYProgress, { stiffness: 150, damping: 35, restDelta: 0.001 });
@@ -70,6 +80,13 @@ export default function Home() {
     return () => window.removeEventListener('scroll', fn);
   }, []);
 
+  // Lock body scroll when menu is open
+  useEffect(() => {
+    if (menuOpen) document.body.style.overflow = 'hidden';
+    else document.body.style.overflow = '';
+    return () => { document.body.style.overflow = ''; };
+  }, [menuOpen]);
+
   // Section refs
   const aboutRef   = useSR();
   const menuRef    = useSR();
@@ -77,6 +94,30 @@ export default function Home() {
 
   return (
     <>
+      {/* ═══ LOADING OVERLAY ══════════════════════════════════════════════ */}
+      {loadPct < 100 && (
+        <div className="fixed inset-0 z-[999] flex flex-col items-center justify-center bg-black">
+          <div className="h-10 w-10 rounded-full border-t-2 border-b-2 border-white/80 animate-spin" />
+          <p className="mt-5 text-[11px] font-medium tracking-[0.3em] text-white/50 uppercase">
+            Loading {loadPct}%
+          </p>
+          <div className="mt-4 h-px w-52 bg-white/10 overflow-hidden">
+            <div
+              className="h-full bg-white/80 transition-all duration-150"
+              style={{ width: `${loadPct}%` }}
+            />
+          </div>
+          {showSkip && (
+            <button 
+              onClick={() => setLoadPct(100)}
+              className="mt-8 text-[10px] tracking-[0.2em] text-white/30 hover:text-white/80 transition-colors uppercase underline underline-offset-4"
+            >
+              Skip Loading
+            </button>
+          )}
+        </div>
+      )}
+
       {/* ═══ FIXED HEADER ════════════════════════════════════════════════ */}
       <header
         style={{
@@ -84,23 +125,23 @@ export default function Home() {
           padding: '0 clamp(20px, 4vw, 56px)',
           height: 72,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          background: scrolled ? 'rgba(8,7,10,0.88)' : 'transparent',
-          backdropFilter: scrolled ? 'blur(20px)' : 'none',
-          WebkitBackdropFilter: scrolled ? 'blur(20px)' : 'none',
-          borderBottom: scrolled ? '1px solid var(--border)' : '1px solid transparent',
+          background: scrolled || menuOpen ? 'rgba(8,7,10,0.95)' : 'transparent',
+          backdropFilter: scrolled || menuOpen ? 'blur(20px)' : 'none',
+          WebkitBackdropFilter: scrolled || menuOpen ? 'blur(20px)' : 'none',
+          borderBottom: scrolled || menuOpen ? '1px solid var(--border)' : '1px solid transparent',
           transition: 'background 0.5s, backdrop-filter 0.5s, border-color 0.5s',
         }}
       >
-        <div>
-          <div className="font-head" style={{ fontSize: 20, color: 'var(--gold)', letterSpacing: '0.08em' }}>
+        <div style={{ position: 'relative', zIndex: 101 }}>
+          <div className="font-head" style={{ fontSize: 'clamp(16px, 5vw, 20px)', color: 'var(--gold)', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>
             Artisan Coffee
           </div>
-          <div className="font-ui" style={{ fontSize: 9, letterSpacing: '0.25em', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: 2 }}>
+          <div className="font-ui" style={{ fontSize: 8, letterSpacing: '0.2em', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: 1 }}>
             Est. 2018 · Melbourne
           </div>
         </div>
 
-        <nav style={{ display: 'flex', gap: 36, alignItems: 'center' }} className="hidden md:flex">
+        <nav className="hidden md:flex items-center gap-9">
           {['About', 'Menu', 'Contact'].map(l => (
             <a key={l} href={`#${l.toLowerCase()}`} className="nav-link">{l}</a>
           ))}
@@ -119,11 +160,59 @@ export default function Home() {
         >
           Reserve
         </a>
+
+        {/* Mobile Toggle */}
+        <button 
+          className="md:hidden flex flex-col justify-center items-center gap-[5px] z-[101] w-10 h-10 -mr-2 outline-none"
+          onClick={() => setMenuOpen(!menuOpen)}
+          style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}
+          aria-label="Toggle Menu"
+        >
+          <div style={{ width: 24, height: 1, background: 'var(--gold)', transition: 'transform 0.3s, opacity 0.3s', transform: menuOpen ? 'rotate(45deg) translate(4px, 4px)' : 'none' }} />
+          <div style={{ width: 24, height: 1, background: 'var(--gold)', transition: 'transform 0.3s, opacity 0.3s', opacity: menuOpen ? 0 : 1 }} />
+          <div style={{ width: 24, height: 1, background: 'var(--gold)', transition: 'transform 0.3s, opacity 0.3s', transform: menuOpen ? 'rotate(-45deg) translate(4px, -4px)' : 'none' }} />
+        </button>
+
+        {/* Mobile Menu Overlay */}
+        <div 
+          className="md:hidden"
+          style={{
+            position: 'fixed', inset: 0, zIndex: 100, height: '100dvh',
+            background: 'var(--bg)',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 32,
+            opacity: menuOpen ? 1 : 0, pointerEvents: menuOpen ? 'auto' : 'none',
+            transition: 'opacity 0.4s ease',
+          }}
+        >
+          {['About', 'Menu', 'Contact'].map(l => (
+            <a 
+              key={l} 
+              href={`#${l.toLowerCase()}`} 
+              className="font-head" 
+              style={{ fontSize: '2rem', color: 'var(--text)', textDecoration: 'none', transition: 'color 0.3s' }}
+              onClick={() => setMenuOpen(false)}
+            >
+              {l}
+            </a>
+          ))}
+          <a
+            href="#contact"
+            className="font-ui"
+            style={{
+              fontSize: 11, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase',
+              padding: '12px 36px', background: 'var(--gold)', color: 'var(--bg)', borderRadius: 999,
+              textDecoration: 'none', marginTop: 16
+            }}
+            onClick={() => setMenuOpen(false)}
+          >
+            Reserve
+          </a>
+        </div>
       </header>
 
       {/* ═══ HERO ════════════════════════════════════════════════════════ */}
-      <div ref={containerRef} style={{ position: 'relative', height: '500vh', zIndex: 0, isolation: 'isolate' as const }}>
-        <ScrollCanvas progress={scrollYProgress} />
+      <div ref={containerRef} style={{ position: 'relative', height: '500vh', zIndex: 0 }}>
+        <ScrollCanvas progress={scrollYProgress} onLoaded={setLoadPct} />
 
         <div style={{ position: 'sticky', top: 0, height: '100vh', width: '100%', zIndex: 10, pointerEvents: 'none' }}>
           <motion.div style={{ opacity: opA, y: yA, filter: blA }} className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
@@ -170,8 +259,8 @@ export default function Home() {
       </div>
 
       {/* ═══ ABOUT ═══════════════════════════════════════════════════════ */}
-      <section id="about" ref={aboutRef} style={{ position: 'relative', zIndex: 1, background: 'var(--bg)', padding: 'clamp(80px, 12vw, 160px) clamp(20px, 5vw, 80px)', borderTop: '1px solid var(--border)' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(400px,100%), 1fr))', gap: 64, alignItems: 'center' }}>
+      <section id="about" ref={aboutRef} style={{ position: 'relative', zIndex: 1, background: 'var(--bg)', padding: 'clamp(60px, 10vw, 120px) clamp(20px, 5vw, 40px)', borderTop: '1px solid var(--border)' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px,100%), 1fr))', gap: '48px 64px', alignItems: 'center' }}>
           {/* Left — image frame */}
           <div className="sr" style={{ position: 'relative' }}>
             <div style={{ position: 'relative', aspectRatio: '3/4', borderRadius: 18, overflow: 'hidden', background: 'var(--bg2)' }}>
@@ -205,10 +294,10 @@ export default function Home() {
             </p>
 
             {/* Stats */}
-            <div className="sr sr-d5" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24, borderTop: '1px solid var(--border)', paddingTop: 32 }}>
+            <div className="sr sr-d5" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))', gap: '24px 12px', borderTop: '1px solid var(--border)', paddingTop: 32 }}>
               {stats.map(s => (
                 <div key={s.label} style={{ textAlign: 'center' }}>
-                  <div className="font-head" style={{ fontSize: 'clamp(1.8rem, 3vw, 2.8rem)', color: '#fff', lineHeight: 1 }}>{s.val}</div>
+                  <div className="font-head" style={{ fontSize: 'clamp(1.8rem, 5vw, 2.8rem)', color: '#fff', lineHeight: 1 }}>{s.val}</div>
                   <div className="font-ui" style={{ fontSize: 9, letterSpacing: '0.2em', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: 8 }}>{s.label}</div>
                 </div>
               ))}
@@ -227,7 +316,7 @@ export default function Home() {
             </h2>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(340px,100%), 1fr))', gap: 24 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(300px,100%), 1fr))', gap: 20 }}>
             {menuItems.map((item, i) => (
               <div key={i} className={`menu-card sr sr-d${Math.min(i + 1, 6)}`}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
@@ -257,7 +346,7 @@ export default function Home() {
           </div>
 
           {/* Info row */}
-          <div className="sr sr-d2" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 40, marginBottom: 56 }}>
+          <div className="sr sr-d2" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 40, marginBottom: 56 }}>
             {[
               { icon: '📍', title: 'Address', lines: ['42 Espresso Lane', 'Artisan District', 'Melbourne, VIC 3000'] },
               { icon: '🕐', title: 'Hours', lines: ['Mon – Fri: 7am – 8pm', 'Sat – Sun: 8am – 9pm'] },
@@ -313,15 +402,15 @@ export default function Home() {
       {/* ═══ FOOTER ══════════════════════════════════════════════════════ */}
       <footer style={{ position: 'relative', zIndex: 1, background: 'var(--bg)', padding: '48px clamp(20px, 5vw, 80px)', borderTop: '1px solid var(--border)' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 24 }}>
-          <div className="font-head" style={{ fontSize: 18, color: 'var(--gold)', letterSpacing: '0.06em' }}>
+          <div className="font-head w-full md:w-auto text-center md:text-left" style={{ fontSize: 18, color: 'var(--gold)', letterSpacing: '0.06em' }}>
             Artisan Coffee
           </div>
-          <div style={{ display: 'flex', gap: 28 }}>
+          <div className="w-full md:w-auto flex justify-center md:justify-end" style={{ gap: 28 }}>
             {['Instagram', 'Twitter', 'Facebook'].map(s => (
               <a key={s} href="#" className="font-ui" style={{ fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--text-muted)', textDecoration: 'none', fontWeight: 600 }}>{s}</a>
             ))}
           </div>
-          <p className="font-ui" style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.08em', opacity: 0.6 }}>
+          <p className="font-ui w-full md:w-auto text-center md:text-left" style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.08em', opacity: 0.6 }}>
             &copy; {new Date().getFullYear()} Artisan Coffee Co. All rights reserved.
           </p>
         </div>
