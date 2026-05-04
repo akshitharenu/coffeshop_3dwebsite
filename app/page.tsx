@@ -94,30 +94,6 @@ export default function Home() {
 
   return (
     <>
-      {/* ═══ LOADING OVERLAY ══════════════════════════════════════════════ */}
-      {loadPct < 100 && (
-        <div className="fixed inset-0 z-[999] flex flex-col items-center justify-center bg-black">
-          <div className="h-10 w-10 rounded-full border-t-2 border-b-2 border-white/80 animate-spin" />
-          <p className="mt-5 text-[11px] font-medium tracking-[0.3em] text-white/50 uppercase">
-            Loading {loadPct}%
-          </p>
-          <div className="mt-4 h-px w-52 bg-white/10 overflow-hidden">
-            <div
-              className="h-full bg-white/80 transition-all duration-150"
-              style={{ width: `${loadPct}%` }}
-            />
-          </div>
-          {showSkip && (
-            <button 
-              onClick={() => setLoadPct(100)}
-              className="mt-8 text-[10px] tracking-[0.2em] text-white/30 hover:text-white/80 transition-colors uppercase underline underline-offset-4"
-            >
-              Skip Loading
-            </button>
-          )}
-        </div>
-      )}
-
       {/* ═══ FIXED HEADER ════════════════════════════════════════════════ */}
       <header
         style={{
