@@ -94,17 +94,17 @@ export default function ScrollCanvas({ progress, onLoaded }: ScrollCanvasProps &
 
           let drawW: number, drawH: number, offsetX: number, offsetY: number;
           if (canvasRatio > imgRatio) {
-            // canvas is wider → constrain by height
-            drawH   = cH;
-            drawW   = cH * imgRatio;
-            offsetX = (cW - drawW) / 2;
-            offsetY = 0;
-          } else {
-            // canvas is taller → constrain by width
-            drawW   = cW;
-            drawH   = cW / imgRatio;
+            // Canvas is wider than image -> cover by width
+            drawW = cW;
+            drawH = cW / imgRatio;
             offsetX = 0;
             offsetY = (cH - drawH) / 2;
+          } else {
+            // Canvas is taller than image (mobile) -> cover by height
+            drawH = cH;
+            drawW = cH * imgRatio;
+            offsetX = (cW - drawW) / 2;
+            offsetY = 0;
           }
 
           // Apply a 12% zoom to push the watermark off the canvas
