@@ -188,7 +188,7 @@ export default function Home() {
 
       {/* ═══ HERO ════════════════════════════════════════════════════════ */}
       <div ref={containerRef} style={{ position: 'relative', height: '500vh', zIndex: 0 }}>
-        <ScrollCanvas progress={scrollYProgress} onLoaded={setLoadPct} />
+        <ScrollCanvas progress={textProgress} onLoaded={setLoadPct} />
 
         <div style={{ position: 'sticky', top: 0, height: '100vh', width: '100%', zIndex: 10, pointerEvents: 'none' }}>
           <motion.div style={{ opacity: opA, y: yA, filter: blA }} className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
