@@ -353,6 +353,7 @@ export default function Home() {
                 type="email"
                 placeholder="Enter your email"
                 className="font-ui"
+                suppressHydrationWarning
                 style={{
                   flex: 1, padding: '14px 24px', background: 'var(--bg2)', color: 'var(--text)',
                   border: 'none', outline: 'none', fontSize: 13, letterSpacing: '0.03em',
@@ -362,6 +363,7 @@ export default function Home() {
               <button
                 type="submit"
                 className="font-ui"
+                suppressHydrationWarning
                 style={{
                   padding: '14px 32px', background: 'var(--gold)', color: 'var(--bg)',
                   border: 'none', fontSize: 10, fontWeight: 700, letterSpacing: '0.18em',
