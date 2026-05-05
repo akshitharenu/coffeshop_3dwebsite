@@ -18,7 +18,7 @@
 /* ═══ RESETS ═══════════════════════════════════════════════════════════ */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-html { scroll-behavior: smooth; }
+html { scroll-behavior: auto !important; }
 
 body {
   background: var(--bg);
@@ -176,6 +176,13 @@ body::before {
 .nav-link:hover::after {
   width: 100%;
 }
+
+/* ═══ LENIS SMOOTH SCROLL ═════════════════════════════════════════════ */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+.lenis.lenis-stopped { overflow: hidden; }
+.lenis.lenis-scrolling iframe { pointer-events: none; }
 
 /* ═══ RESPONSIVE HELPERS ═════════════════════════════════════════════ */
 @media (max-width: 768px) {

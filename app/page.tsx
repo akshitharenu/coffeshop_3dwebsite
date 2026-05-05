@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useEffect, useState } from 'react';
-import { useScroll, useSpring, useTransform, motion } from 'framer-motion';
+import { useScroll, useTransform, motion, useSpring, useInView } from 'framer-motion';
 import ScrollCanvas from '@/components/ScrollCanvas';
 
 /* ── Scroll-reveal hook ─────────────────────────────────────────────── */
@@ -54,7 +54,8 @@ export default function Home() {
   }, [loadPct]);
 
   const { scrollYProgress } = useScroll({ target: containerRef, offset: ['start start', 'end end'] });
-  const textProgress = useSpring(scrollYProgress, { stiffness: 150, damping: 35, restDelta: 0.001 });
+  // Smoother spring for a buttery-smooth scrollytelling experience
+  const textProgress = useSpring(scrollYProgress, { stiffness: 120, damping: 50, restDelta: 0.001 });
 
   // Beats
   const opA = useTransform(textProgress, [0, 0.05, 0.18, 0.24], [1, 1, 1, 0]);

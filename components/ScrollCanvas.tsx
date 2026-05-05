@@ -9,7 +9,7 @@ interface ScrollCanvasProps {
   progress: MotionValue<number>;
 }
 
-export default function ScrollCanvas({ progress, onLoaded }: ScrollCanvasProps & { onLoaded?: (pct: number) => void }) {
+export default React.memo(function ScrollCanvas({ progress, onLoaded }: ScrollCanvasProps & { onLoaded?: (pct: number) => void }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imagesRef = useRef<(HTMLImageElement | null)[]>([]);
   const rafRef = useRef<number | null>(null);
@@ -44,7 +44,7 @@ export default function ScrollCanvas({ progress, onLoaded }: ScrollCanvasProps &
     return () => {
       imagesRef.current.forEach((img) => { if (img) img.onload = null; });
     };
-  }, [onLoaded]);
+  }, [allLoaded, onLoaded]);
 
   // ── Resize canvas to exactly fill the window ──────────────────────────
   const resize = useCallback(() => {
@@ -84,23 +84,17 @@ export default function ScrollCanvas({ progress, onLoaded }: ScrollCanvasProps &
           const cW = canvas.width;
           const cH = canvas.height;
 
-          // fill black first
-          ctx.fillStyle = '#000000';
-          ctx.fillRect(0, 0, cW, cH);
-
-          // "cover" fit with a slight zoom to crop out the Veo watermark
+          // "cover" fit calculation
           const imgRatio    = img.naturalWidth  / img.naturalHeight;
           const canvasRatio = cW / cH;
 
           let drawW: number, drawH: number, offsetX: number, offsetY: number;
           if (canvasRatio > imgRatio) {
-            // Canvas is wider than image -> cover by width
             drawW = cW;
             drawH = cW / imgRatio;
             offsetX = 0;
             offsetY = (cH - drawH) / 2;
           } else {
-            // Canvas is taller than image (mobile) -> cover by height
             drawH = cH;
             drawW = cH * imgRatio;
             offsetX = (cW - drawW) / 2;
@@ -114,19 +108,8 @@ export default function ScrollCanvas({ progress, onLoaded }: ScrollCanvasProps &
           const zx = offsetX - (zw - drawW) / 2;
           const zy = offsetY - (zh - drawH) / 2;
 
-          ctx.imageSmoothingEnabled = true;
-          ctx.imageSmoothingQuality = 'high';
+          // Use default smoothing for raw performance
           ctx.drawImage(img, zx, zy, zw, zh);
-
-          // As an extra fallback, draw a black fade over the bottom right corner
-          const gradient = ctx.createRadialGradient(
-            zx + zw, zy + zh, 0, 
-            zx + zw, zy + zh, Math.max(zw, zh) * 0.15
-          );
-          gradient.addColorStop(0, 'rgba(0,0,0,1)');
-          gradient.addColorStop(1, 'rgba(0,0,0,0)');
-          ctx.fillStyle = gradient;
-          ctx.fillRect(zx + zw - (zw * 0.2), zy + zh - (zh * 0.2), zw * 0.2, zh * 0.2);
         }
       }
 
@@ -142,14 +125,21 @@ export default function ScrollCanvas({ progress, onLoaded }: ScrollCanvasProps &
     };
   }, [allLoaded, progress, resize]);
 
-  const loadPct = Math.round((loadedCount / FRAME_COUNT) * 100);
-
   return (
     <>
       {/* Canvas — sticky inside the hero wrapper; sections below occlude it */}
       <canvas
         ref={canvasRef}
-        style={{ position: 'sticky', top: 0, left: 0, zIndex: 0, display: 'block', width: '100%', height: '100vh' }}
+        style={{ 
+          position: 'sticky', 
+          top: 0, 
+          left: 0, 
+          zIndex: 0, 
+          display: 'block', 
+          width: '100%', 
+          height: '100vh',
+          pointerEvents: 'none' 
+        }}
       />
 
       {/* Scroll cue */}
@@ -169,4 +159,4 @@ export default function ScrollCanvas({ progress, onLoaded }: ScrollCanvasProps &
       </motion.div>
     </>
   );
-}
+});
