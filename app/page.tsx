@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useEffect, useState } from 'react';
-import { useScroll, useTransform, motion, useSpring, useInView } from 'framer-motion';
+import { useScroll, useTransform, motion, useSpring } from 'framer-motion';
 import ScrollCanvas from '@/components/ScrollCanvas';
 
 /* ── Scroll-reveal hook ─────────────────────────────────────────────── */
@@ -53,9 +53,11 @@ export default function Home() {
     return () => clearTimeout(timer);
   }, [loadPct]);
 
+
   const { scrollYProgress } = useScroll({ target: containerRef, offset: ['start start', 'end end'] });
-  // Smoother spring for a buttery-smooth scrollytelling experience
-  const textProgress = useSpring(scrollYProgress, { stiffness: 120, damping: 50, restDelta: 0.001 });
+  // Highly responsive spring settings for a buttery, lag-free feel
+  const textProgress = useSpring(scrollYProgress, { stiffness: 250, damping: 40, restDelta: 0.0001 });
+
 
   // Beats
   const opA = useTransform(textProgress, [0, 0.05, 0.18, 0.24], [1, 1, 1, 0]);
@@ -70,9 +72,11 @@ export default function Home() {
   const yC  = useTransform(textProgress, [0.52, 0.58, 0.70, 0.76], [40, 0, 0, -40]);
   const blC = useTransform(textProgress, [0.52, 0.58, 0.70, 0.76], ['blur(10px)', 'blur(0px)', 'blur(0px)', 'blur(10px)']);
 
-  const opD = useTransform(textProgress, [0.78, 0.84, 0.95, 1.0], [0, 1, 1, 1]);
-  const yD  = useTransform(textProgress, [0.78, 0.84, 0.95, 1.0], [40, 0, 0, 0]);
+  const opD = useTransform(textProgress, [0.78, 0.84, 0.92, 0.98], [0, 1, 1, 0]);
+  const yD  = useTransform(textProgress, [0.78, 0.84, 0.95, 1.0], [40, 0, 0, -40]);
   const blD = useTransform(textProgress, [0.78, 0.84], ['blur(10px)', 'blur(0px)']);
+
+  const canvasOp = useTransform(textProgress, [0.94, 1.0], [1, 0]);
 
   // Nav scroll detection
   useEffect(() => {
@@ -187,196 +191,253 @@ export default function Home() {
         </div>
       </header>
 
-      {/* ═══ HERO ════════════════════════════════════════════════════════ */}
-      <div ref={containerRef} style={{ position: 'relative', height: '500vh', zIndex: 0 }}>
-        <ScrollCanvas progress={textProgress} onLoaded={setLoadPct} />
+      {/* Structured Data for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "CoffeeShop",
+            "name": "Artisan Coffee Co.",
+            "description": "Premium handcrafted coffee roastery and café.",
+            "url": "https://artisan-coffee.example.com",
+            "telephone": "+61 3 9000 1234",
+            "address": {
+              "@type": "PostalAddress",
+              "streetAddress": "42 Espresso Lane",
+              "addressLocality": "Melbourne",
+              "addressRegion": "VIC",
+              "postalCode": "3000",
+              "addressCountry": "AU"
+            },
+            "openingHoursSpecification": [
+              {
+                "@type": "OpeningHoursSpecification",
+                "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+                "opens": "07:00",
+                "closes": "20:00"
+              },
+              {
+                "@type": "OpeningHoursSpecification",
+                "dayOfWeek": ["Saturday", "Sunday"],
+                "opens": "08:00",
+                "closes": "21:00"
+              }
+            ],
+            "priceRange": "$$"
+          })
+        }}
+      />
 
-        <div style={{ position: 'sticky', top: 0, height: '100vh', width: '100%', zIndex: 10, pointerEvents: 'none' }}>
-          <motion.div style={{ opacity: opA, y: yA, filter: blA }} className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
-            <p className="font-ui" style={{ color: 'var(--gold)', fontSize: 11, letterSpacing: '0.5em', textTransform: 'uppercase', marginBottom: 24, opacity: 0.8 }}>Artisan Coffee Co.</p>
-            <h1 className="font-head" style={{ fontSize: 'clamp(2.5rem, 8vw, 9rem)', fontWeight: 400, color: '#fff', lineHeight: 0.88, marginBottom: 32 }}>
-              The Art of<br /><span className="gradient-text" style={{ fontStyle: 'italic' }}>Coffee</span>
-            </h1>
-            <p className="font-body" style={{ fontSize: 'clamp(1rem, 2vw, 1.35rem)', color: 'var(--text-muted)', maxWidth: 520, lineHeight: 1.7 }}>
-              Handcrafted with precision. Served with passion. Every cup tells a story.
-            </p>
-          </motion.div>
-
-          <motion.div style={{ opacity: opB, y: yB, filter: blB }} className="absolute inset-0 flex flex-col justify-center px-8 md:px-32 text-left">
-            <div style={{ width: 48, height: 1, background: 'var(--gold)', opacity: 0.5, marginBottom: 32 }} />
-            <h2 className="font-head" style={{ fontSize: 'clamp(2rem, 5vw, 5rem)', fontWeight: 400, color: '#fff', lineHeight: 1.05, marginBottom: 24 }}>
-              Single Origin<br /><span className="gradient-text" style={{ fontStyle: 'italic' }}>Beans</span>
-            </h2>
-            <p className="font-body" style={{ fontSize: 'clamp(1rem, 1.8vw, 1.25rem)', color: 'var(--text-muted)', maxWidth: 460, lineHeight: 1.7 }}>
-              Sourced directly from family-owned farms. Roasted in micro-batches to unlock every hidden flavor note.
-            </p>
-          </motion.div>
-
-          <motion.div style={{ opacity: opC, y: yC, filter: blC }} className="absolute inset-0 flex flex-col justify-center items-end px-8 md:px-32 text-right">
-            <div style={{ maxWidth: 520 }}>
-              <div style={{ width: 48, height: 1, background: 'var(--gold)', opacity: 0.5, marginBottom: 32, marginLeft: 'auto' }} />
-              <h2 className="font-head" style={{ fontSize: 'clamp(2rem, 5vw, 5rem)', fontWeight: 400, color: '#fff', lineHeight: 1.05, marginBottom: 24 }}>
-                The Perfect<br /><span className="gradient-text" style={{ fontStyle: 'italic' }}>Pour</span>
-              </h2>
-              <p className="font-body" style={{ fontSize: 'clamp(1rem, 1.8vw, 1.25rem)', color: 'var(--text-muted)', lineHeight: 1.7 }}>
-                Ice, milk, and espresso collide in a carefully choreographed moment of artisanal flavour.
-              </p>
-            </div>
-          </motion.div>
-
-          <motion.div style={{ opacity: opD, y: yD, filter: blD }} className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
-            <h2 className="font-head" style={{ fontSize: 'clamp(2.5rem, 7vw, 7.5rem)', fontWeight: 400, color: '#fff', lineHeight: 0.9, marginBottom: 28 }}>
-              Taste the<br /><span className="gradient-text" style={{ fontStyle: 'italic' }}>Difference</span>
-            </h2>
-            <p className="font-body" style={{ fontSize: 'clamp(1rem, 2vw, 1.3rem)', color: 'var(--text-muted)', maxWidth: 480, lineHeight: 1.7 }}>
-              Experience coffee in its purest form. A journey of flavour, one cup at a time.
-            </p>
-          </motion.div>
+      {/* ═══ LOADING OVERLAY ══════════════════════════════════════════════ */}
+      {loadPct < 100 && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9999, background: 'var(--bg)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          transition: 'opacity 0.8s ease, visibility 0.8s'
+        }}>
+          <div className="font-head" style={{ fontSize: 32, color: 'var(--gold)', marginBottom: 24 }}>{loadPct}%</div>
+          <div style={{ width: 200, height: 2, background: 'var(--border)', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', inset: 0, background: 'var(--gold)', transform: `translateX(-${100 - loadPct}%)`, transition: 'transform 0.2s linear' }} />
+          </div>
+          {showSkip && (
+            <button
+              onClick={() => setLoadPct(100)}
+              className="font-ui"
+              style={{ marginTop: 32, background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-muted)', padding: '8px 20px', borderRadius: 999, fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', cursor: 'pointer' }}
+            >
+              Skip Loading
+            </button>
+          )}
         </div>
-      </div>
+      )}
 
-      {/* ═══ ABOUT ═══════════════════════════════════════════════════════ */}
-      <section id="about" ref={aboutRef} style={{ position: 'relative', zIndex: 1, background: 'var(--bg)', padding: 'clamp(60px, 10vw, 120px) clamp(20px, 5vw, 40px)', borderTop: '1px solid var(--border)' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px,100%), 1fr))', gap: '48px 64px', alignItems: 'center' }}>
-          {/* Left — image frame */}
-          <div className="sr" style={{ position: 'relative' }}>
-            <div style={{ position: 'relative', aspectRatio: '3/4', borderRadius: 18, overflow: 'hidden', background: 'var(--bg2)' }}>
-              <img src="https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=700&q=80" alt="Coffee beans" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.85 }} />
-              {/* offset border accent */}
-              <div style={{ position: 'absolute', inset: -8, border: '1px solid var(--gold)', borderRadius: 22, opacity: 0.25, pointerEvents: 'none', transform: 'translate(12px,12px)' }} />
+      <main>
+        {/* ═══ HERO ════════════════════════════════════════════════════════ */}
+        <section ref={containerRef} style={{ position: 'relative', height: '300vh', zIndex: 0 }}>
+
+
+          <ScrollCanvas progress={textProgress} opacity={canvasOp} onLoaded={setLoadPct} />
+
+
+          <div style={{ position: 'sticky', top: 0, height: '100vh', width: '100%', zIndex: 10, pointerEvents: 'none' }}>
+            <motion.div style={{ opacity: opA, y: yA, filter: blA }} className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
+              <p className="font-ui" style={{ color: 'var(--gold)', fontSize: 11, letterSpacing: '0.5em', textTransform: 'uppercase', marginBottom: 24, opacity: 0.8 }}>Artisan Coffee Co.</p>
+              <h1 className="font-head" style={{ fontSize: 'clamp(2.5rem, 8vw, 9rem)', fontWeight: 400, color: '#fff', lineHeight: 0.88, marginBottom: 32 }}>
+                The Art of<br /><span className="gradient-text" style={{ fontStyle: 'italic' }}>Coffee</span>
+              </h1>
+              <p className="font-body" style={{ fontSize: 'clamp(1rem, 2vw, 1.35rem)', color: 'var(--text-muted)', maxWidth: 520, lineHeight: 1.7 }}>
+                Handcrafted with precision. Served with passion. Every cup tells a story.
+              </p>
+            </motion.div>
+
+            <motion.div style={{ opacity: opB, y: yB, filter: blB }} className="absolute inset-0 flex flex-col justify-center px-8 md:px-32 text-left">
+              <div style={{ width: 48, height: 1, background: 'var(--gold)', opacity: 0.5, marginBottom: 32 }} />
+              <h2 className="font-head" style={{ fontSize: 'clamp(2rem, 5vw, 5rem)', fontWeight: 400, color: '#fff', lineHeight: 1.05, marginBottom: 24 }}>
+                Single Origin<br /><span className="gradient-text" style={{ fontStyle: 'italic' }}>Beans</span>
+              </h2>
+              <p className="font-body" style={{ fontSize: 'clamp(1rem, 1.8vw, 1.25rem)', color: 'var(--text-muted)', maxWidth: 460, lineHeight: 1.7 }}>
+                Sourced directly from family-owned farms. Roasted in micro-batches to unlock every hidden flavor note.
+              </p>
+            </motion.div>
+
+            <motion.div style={{ opacity: opC, y: yC, filter: blC }} className="absolute inset-0 flex flex-col justify-center items-end px-8 md:px-32 text-right">
+              <div style={{ maxWidth: 520 }}>
+                <div style={{ width: 48, height: 1, background: 'var(--gold)', opacity: 0.5, marginBottom: 32, marginLeft: 'auto' }} />
+                <h2 className="font-head" style={{ fontSize: 'clamp(2rem, 5vw, 5rem)', fontWeight: 400, color: '#fff', lineHeight: 1.05, marginBottom: 24 }}>
+                  The Perfect<br /><span className="gradient-text" style={{ fontStyle: 'italic' }}>Pour</span>
+                </h2>
+                <p className="font-body" style={{ fontSize: 'clamp(1rem, 1.8vw, 1.25rem)', color: 'var(--text-muted)', lineHeight: 1.7 }}>
+                  Ice, milk, and espresso collide in a carefully choreographed moment of artisanal flavour.
+                </p>
+              </div>
+            </motion.div>
+
+            <motion.div style={{ opacity: opD, y: yD, filter: blD }} className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
+              <h2 className="font-head" style={{ fontSize: 'clamp(2.5rem, 7vw, 7.5rem)', fontWeight: 400, color: '#fff', lineHeight: 0.9, marginBottom: 28 }}>
+                Taste the<br /><span className="gradient-text" style={{ fontStyle: 'italic' }}>Difference</span>
+              </h2>
+              <p className="font-body" style={{ fontSize: 'clamp(1rem, 2vw, 1.3rem)', color: 'var(--text-muted)', maxWidth: 480, lineHeight: 1.7 }}>
+                Experience coffee in its purest form. A journey of flavour, one cup at a time.
+              </p>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* ═══ ABOUT ═══════════════════════════════════════════════════════ */}
+        <section id="about" ref={aboutRef} style={{ position: 'relative', zIndex: 1, background: 'var(--bg)', padding: 'clamp(60px, 10vw, 120px) clamp(20px, 5vw, 40px)', borderTop: '1px solid var(--border)' }}>
+          <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px,100%), 1fr))', gap: '48px 64px', alignItems: 'center' }}>
+            <div className="sr" style={{ position: 'relative' }}>
+              <div style={{ position: 'relative', aspectRatio: '3/4', borderRadius: 18, overflow: 'hidden', background: 'var(--bg2)' }}>
+                <img src="https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=700&q=80" alt="Coffee beans" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.85 }} />
+                <div style={{ position: 'absolute', inset: -8, border: '1px solid var(--gold)', borderRadius: 22, opacity: 0.25, pointerEvents: 'none', transform: 'translate(12px,12px)' }} />
+              </div>
+              <div className="animate-float" style={{
+                position: 'absolute', bottom: 32, right: -16,
+                background: 'rgba(8,7,10,0.92)', backdropFilter: 'blur(12px)',
+                border: '1px solid var(--border)', borderRadius: 14, padding: '18px 24px',
+                textAlign: 'center',
+              }}>
+                <div className="font-head" style={{ fontSize: 32, color: 'var(--gold)', lineHeight: 1 }}>7+</div>
+                <div className="font-ui" style={{ fontSize: 9, letterSpacing: '0.2em', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: 4 }}>Years of Craft</div>
+              </div>
             </div>
-            {/* floating stat tag */}
-            <div className="animate-float" style={{
-              position: 'absolute', bottom: 32, right: -16,
-              background: 'rgba(8,7,10,0.92)', backdropFilter: 'blur(12px)',
-              border: '1px solid var(--border)', borderRadius: 14, padding: '18px 24px',
-              textAlign: 'center',
-            }}>
-              <div className="font-head" style={{ fontSize: 32, color: 'var(--gold)', lineHeight: 1 }}>7+</div>
-              <div className="font-ui" style={{ fontSize: 9, letterSpacing: '0.2em', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: 4 }}>Years of Craft</div>
+
+            <div>
+              <div className="section-label sr sr-d1">Our Story</div>
+              <h2 className="font-head sr sr-d2" style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', fontWeight: 400, color: '#fff', lineHeight: 1.1, marginBottom: 28 }}>
+                Where Coffee Meets<br /><span style={{ color: 'var(--gold)', fontStyle: 'italic' }}>Craft</span>
+              </h2>
+              <p className="font-body sr sr-d3" style={{ fontSize: '1.1rem', color: 'var(--text-muted)', lineHeight: 1.85, marginBottom: 20 }}>
+                Founded in 2018, Artisan Coffee Co. was born from an obsession with the perfect cup. We travel the world to source the rarest single-origin beans from family estates across three continents.
+              </p>
+              <p className="font-body sr sr-d4" style={{ fontSize: '1.05rem', color: 'var(--text-muted)', lineHeight: 1.85, marginBottom: 48, paddingLeft: 20, borderLeft: '2px solid rgba(200,169,110,0.25)' }}>
+                Every bean is roasted in our in-house micro-roastery, every drink crafted by master baristas, and every experience designed to make you savour the moment.
+              </p>
+
+              <div className="sr sr-d5" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))', gap: '24px 12px', borderTop: '1px solid var(--border)', paddingTop: 32 }}>
+                {stats.map(s => (
+                  <div key={s.label} style={{ textAlign: 'center' }}>
+                    <div className="font-head" style={{ fontSize: 'clamp(1.8rem, 5vw, 2.8rem)', color: '#fff', lineHeight: 1 }}>{s.val}</div>
+                    <div className="font-ui" style={{ fontSize: 9, letterSpacing: '0.2em', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: 8 }}>{s.label}</div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
+        </section>
 
-          {/* Right — content */}
-          <div>
-            <div className="section-label sr sr-d1">Our Story</div>
-            <h2 className="font-head sr sr-d2" style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', fontWeight: 400, color: '#fff', lineHeight: 1.1, marginBottom: 28 }}>
-              Where Coffee Meets<br /><span style={{ color: 'var(--gold)', fontStyle: 'italic' }}>Craft</span>
-            </h2>
-            <p className="font-body sr sr-d3" style={{ fontSize: '1.1rem', color: 'var(--text-muted)', lineHeight: 1.85, marginBottom: 20 }}>
-              Founded in 2018, Artisan Coffee Co. was born from an obsession with the perfect cup. We travel the world to source the rarest single-origin beans from family estates across three continents.
-            </p>
-            <p className="font-body sr sr-d4" style={{ fontSize: '1.05rem', color: 'var(--text-muted)', lineHeight: 1.85, marginBottom: 48, paddingLeft: 20, borderLeft: '2px solid rgba(200,169,110,0.25)' }}>
-              Every bean is roasted in our in-house micro-roastery, every drink crafted by master baristas, and every experience designed to make you savour the moment.
-            </p>
+        {/* ═══ MENU ════════════════════════════════════════════════════════ */}
+        <section id="menu" ref={menuRef} style={{ position: 'relative', zIndex: 1, background: 'var(--bg2)', padding: 'clamp(80px, 12vw, 160px) clamp(20px, 5vw, 80px)', borderTop: '1px solid var(--border)' }}>
+          <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+            <div style={{ textAlign: 'center', marginBottom: 64 }}>
+              <div className="section-label sr" style={{ justifyContent: 'center' }}>The Menu</div>
+              <h2 className="font-head sr sr-d1" style={{ fontSize: 'clamp(2rem, 4.5vw, 4rem)', fontWeight: 400, color: '#fff', lineHeight: 1.1 }}>
+                Curated <span style={{ color: 'var(--gold)', fontStyle: 'italic' }}>Selections</span>
+              </h2>
+            </div>
 
-            {/* Stats */}
-            <div className="sr sr-d5" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))', gap: '24px 12px', borderTop: '1px solid var(--border)', paddingTop: 32 }}>
-              {stats.map(s => (
-                <div key={s.label} style={{ textAlign: 'center' }}>
-                  <div className="font-head" style={{ fontSize: 'clamp(1.8rem, 5vw, 2.8rem)', color: '#fff', lineHeight: 1 }}>{s.val}</div>
-                  <div className="font-ui" style={{ fontSize: 9, letterSpacing: '0.2em', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: 8 }}>{s.label}</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(300px,100%), 1fr))', gap: 20 }}>
+              {menuItems.map((item, i) => (
+                <div key={i} className={`menu-card sr sr-d${Math.min(i + 1, 6)}`}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+                    <h3 className="font-head" style={{ fontSize: 18, color: '#fff', fontWeight: 500, lineHeight: 1.3, flex: 1 }}>{item.name}</h3>
+                    <span className="font-head" style={{ fontSize: 22, color: 'var(--gold)', marginLeft: 16, whiteSpace: 'nowrap' }}>{item.price}</span>
+                  </div>
+                  {item.tag && <span className="pill" style={{ marginBottom: 12, display: 'inline-block' }}>{item.tag}</span>}
+                  <p className="font-body" style={{ fontSize: '1.05rem', color: 'var(--text-muted)', lineHeight: 1.7 }}>{item.desc}</p>
                 </div>
               ))}
             </div>
-          </div>
-        </div>
-      </section>
 
-      {/* ═══ MENU ════════════════════════════════════════════════════════ */}
-      <section id="menu" ref={menuRef} style={{ position: 'relative', zIndex: 1, background: 'var(--bg2)', padding: 'clamp(80px, 12vw, 160px) clamp(20px, 5vw, 80px)', borderTop: '1px solid var(--border)' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 64 }}>
-            <div className="section-label sr" style={{ justifyContent: 'center' }}>The Menu</div>
-            <h2 className="font-head sr sr-d1" style={{ fontSize: 'clamp(2rem, 4.5vw, 4rem)', fontWeight: 400, color: '#fff', lineHeight: 1.1 }}>
-              Curated <span style={{ color: 'var(--gold)', fontStyle: 'italic' }}>Selections</span>
-            </h2>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(300px,100%), 1fr))', gap: 20 }}>
-            {menuItems.map((item, i) => (
-              <div key={i} className={`menu-card sr sr-d${Math.min(i + 1, 6)}`}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-                  <h3 className="font-head" style={{ fontSize: 18, color: '#fff', fontWeight: 500, lineHeight: 1.3, flex: 1 }}>{item.name}</h3>
-                  <span className="font-head" style={{ fontSize: 22, color: 'var(--gold)', marginLeft: 16, whiteSpace: 'nowrap' }}>{item.price}</span>
-                </div>
-                {item.tag && <span className="pill" style={{ marginBottom: 12, display: 'inline-block' }}>{item.tag}</span>}
-                <p className="font-body" style={{ fontSize: '1.05rem', color: 'var(--text-muted)', lineHeight: 1.7 }}>{item.desc}</p>
-              </div>
-            ))}
-          </div>
-
-          <p className="sr sr-d4 font-ui" style={{ textAlign: 'center', marginTop: 48, fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic', letterSpacing: '0.05em' }}>
-            Prices may vary by location. All beans are ethically sourced.
-          </p>
-        </div>
-      </section>
-
-      {/* ═══ CONTACT ═════════════════════════════════════════════════════ */}
-      <section id="contact" ref={contactRef} style={{ position: 'relative', zIndex: 1, background: 'var(--bg)', padding: 'clamp(80px, 12vw, 160px) clamp(20px, 5vw, 80px)', borderTop: '1px solid var(--border)' }}>
-        <div style={{ maxWidth: 1000, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 64 }}>
-            <div className="section-label sr" style={{ justifyContent: 'center' }}>Get in Touch</div>
-            <h2 className="font-head sr sr-d1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3.8rem)', fontWeight: 400, color: '#fff', lineHeight: 1.1 }}>
-              Visit <span style={{ color: 'var(--gold)', fontStyle: 'italic' }}>Us</span>
-            </h2>
-          </div>
-
-          {/* Info row */}
-          <div className="sr sr-d2" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 40, marginBottom: 56 }}>
-            {[
-              { icon: '📍', title: 'Address', lines: ['42 Espresso Lane', 'Artisan District', 'Melbourne, VIC 3000'] },
-              { icon: '🕐', title: 'Hours', lines: ['Mon – Fri: 7am – 8pm', 'Sat – Sun: 8am – 9pm'] },
-              { icon: '📞', title: 'Phone', lines: ['+61 3 9000 1234', 'hello@artisan.coffee'] },
-            ].map(c => (
-              <div key={c.title} style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 28, marginBottom: 12 }}>{c.icon}</div>
-                <div className="font-ui" style={{ fontSize: 10, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 12, fontWeight: 600 }}>{c.title}</div>
-                {c.lines.map((l, i) => (
-                  <div key={i} className="font-body" style={{ fontSize: '1.1rem', color: 'var(--text-muted)', lineHeight: 1.8 }}>{l}</div>
-                ))}
-              </div>
-            ))}
-          </div>
-
-          <hr className="gold-rule sr sr-d3" style={{ marginBottom: 56 }} />
-
-          {/* Newsletter */}
-          <div className="sr sr-d4" style={{ textAlign: 'center', maxWidth: 560, margin: '0 auto' }}>
-            <h3 className="font-head" style={{ fontSize: 'clamp(1.4rem, 3vw, 2rem)', fontWeight: 400, color: '#fff', marginBottom: 12 }}>
-              Join the <span style={{ color: 'var(--gold)', fontStyle: 'italic' }}>Club</span>
-            </h3>
-            <p className="font-body" style={{ fontSize: '1.05rem', color: 'var(--text-muted)', lineHeight: 1.7, marginBottom: 32 }}>
-              Exclusive access to rare roasts, seasonal specials, and masterclass invitations.
+            <p className="sr sr-d4 font-ui" style={{ textAlign: 'center', marginTop: 48, fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic', letterSpacing: '0.05em' }}>
+              Prices may vary by location. All beans are ethically sourced.
             </p>
-            <form onSubmit={e => e.preventDefault()} style={{ display: 'flex', gap: 0, borderRadius: 999, overflow: 'hidden', border: '1px solid var(--border)' }}>
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="font-ui"
-                suppressHydrationWarning
-                style={{
-                  flex: 1, padding: '14px 24px', background: 'var(--bg2)', color: 'var(--text)',
-                  border: 'none', outline: 'none', fontSize: 13, letterSpacing: '0.03em',
-                  minWidth: 0,
-                }}
-              />
-              <button
-                type="submit"
-                className="font-ui"
-                suppressHydrationWarning
-                style={{
-                  padding: '14px 32px', background: 'var(--gold)', color: 'var(--bg)',
-                  border: 'none', fontSize: 10, fontWeight: 700, letterSpacing: '0.18em',
-                  textTransform: 'uppercase', cursor: 'pointer', whiteSpace: 'nowrap',
-                }}
-              >
-                Subscribe
-              </button>
-            </form>
           </div>
-        </div>
-      </section>
+        </section>
+
+        {/* ═══ CONTACT ═════════════════════════════════════════════════════ */}
+        <section id="contact" ref={contactRef} style={{ position: 'relative', zIndex: 1, background: 'var(--bg)', padding: 'clamp(80px, 12vw, 160px) clamp(20px, 5vw, 80px)', borderTop: '1px solid var(--border)' }}>
+          <div style={{ maxWidth: 1000, margin: '0 auto' }}>
+            <div style={{ textAlign: 'center', marginBottom: 64 }}>
+              <div className="section-label sr" style={{ justifyContent: 'center' }}>Get in Touch</div>
+              <h2 className="font-head sr sr-d1" style={{ fontSize: 'clamp(2rem, 4.5vw, 3.8rem)', fontWeight: 400, color: '#fff', lineHeight: 1.1 }}>
+                Visit <span style={{ color: 'var(--gold)', fontStyle: 'italic' }}>Us</span>
+              </h2>
+            </div>
+
+            <div className="sr sr-d2" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 40, marginBottom: 56 }}>
+              {[
+                { icon: '📍', title: 'Address', lines: ['42 Espresso Lane', 'Artisan District', 'Melbourne, VIC 3000'] },
+                { icon: '🕐', title: 'Hours', lines: ['Mon – Fri: 7am – 8pm', 'Sat – Sun: 8am – 9pm'] },
+                { icon: '📞', title: 'Phone', lines: ['+61 3 9000 1234', 'hello@artisan.coffee'] },
+              ].map(c => (
+                <div key={c.title} style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: 28, marginBottom: 12 }}>{c.icon}</div>
+                  <div className="font-ui" style={{ fontSize: 10, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 12, fontWeight: 600 }}>{c.title}</div>
+                  {c.lines.map((l, i) => (
+                    <div key={i} className="font-body" style={{ fontSize: '1.1rem', color: 'var(--text-muted)', lineHeight: 1.8 }}>{l}</div>
+                  ))}
+                </div>
+              ))}
+            </div>
+
+            <hr className="gold-rule sr sr-d3" style={{ marginBottom: 56 }} />
+
+            <div className="sr sr-d4" style={{ textAlign: 'center', maxWidth: 560, margin: '0 auto' }}>
+              <h3 className="font-head" style={{ fontSize: 'clamp(1.4rem, 3vw, 2rem)', fontWeight: 400, color: '#fff', marginBottom: 12 }}>
+                Join the <span style={{ color: 'var(--gold)', fontStyle: 'italic' }}>Club</span>
+              </h3>
+              <p className="font-body" style={{ fontSize: '1.05rem', color: 'var(--text-muted)', lineHeight: 1.7, marginBottom: 32 }}>
+                Exclusive access to rare roasts, seasonal specials, and masterclass invitations.
+              </p>
+              <form onSubmit={e => e.preventDefault()} style={{ display: 'flex', gap: 0, borderRadius: 999, overflow: 'hidden', border: '1px solid var(--border)' }}>
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  className="font-ui"
+                  style={{
+                    flex: 1, padding: '14px 24px', background: 'var(--bg2)', color: 'var(--text)',
+                    border: 'none', outline: 'none', fontSize: 13, letterSpacing: '0.03em',
+                    minWidth: 0,
+                  }}
+                />
+                <button
+                  type="submit"
+                  className="font-ui"
+                  style={{
+                    padding: '14px 32px', background: 'var(--gold)', color: 'var(--bg)',
+                    border: 'none', fontSize: 10, fontWeight: 700, letterSpacing: '0.18em',
+                    textTransform: 'uppercase', cursor: 'pointer', whiteSpace: 'nowrap',
+                  }}
+                >
+                  Subscribe
+                </button>
+              </form>
+            </div>
+          </div>
+        </section>
+      </main>
 
       {/* ═══ FOOTER ══════════════════════════════════════════════════════ */}
       <footer style={{ position: 'relative', zIndex: 1, background: 'var(--bg)', padding: '48px clamp(20px, 5vw, 80px)', borderTop: '1px solid var(--border)' }}>

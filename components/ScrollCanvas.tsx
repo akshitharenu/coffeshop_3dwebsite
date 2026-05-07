@@ -4,23 +4,25 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { MotionValue, useTransform, motion } from 'framer-motion';
 
 const FRAME_COUNT = 192;
+const PRELOAD_THRESHOLD = 40; // Site becomes interactive after 40 frames
 
 interface ScrollCanvasProps {
   progress: MotionValue<number>;
+  opacity?: MotionValue<number>;
 }
 
-export default React.memo(function ScrollCanvas({ progress, onLoaded }: ScrollCanvasProps & { onLoaded?: (pct: number) => void }) {
+export default React.memo(function ScrollCanvas({ progress, opacity, onLoaded }: ScrollCanvasProps & { onLoaded?: (pct: number) => void }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imagesRef = useRef<(HTMLImageElement | null)[]>([]);
   const rafRef = useRef<number | null>(null);
   const lastIndexRef = useRef<number>(-1);
   const [loadedCount, setLoadedCount] = useState(0);
-  const [allLoaded, setAllLoaded] = useState(false);
+  const [isReady, setIsReady] = useState(false);
 
-  // ── Preload all frames ────────────────────────────────────────────────
+  // ── Smart Preloading ────────────────────────────────────────────────
   useEffect(() => {
-    if (allLoaded) return;
     let count = 0;
+    let thresholdMet = false;
     imagesRef.current = new Array(FRAME_COUNT).fill(null);
 
     for (let i = 0; i < FRAME_COUNT; i++) {
@@ -31,20 +33,31 @@ export default React.memo(function ScrollCanvas({ progress, onLoaded }: ScrollCa
         imagesRef.current[idx] = img;
         count++;
         setLoadedCount(count);
-        onLoaded?.(Math.round((count / FRAME_COUNT) * 100));
-        if (count === FRAME_COUNT) setAllLoaded(true);
+
+        // Progress calculation based on threshold for the loading screen
+        if (!thresholdMet) {
+          const pct = Math.min(100, Math.round((count / PRELOAD_THRESHOLD) * 100));
+          onLoaded?.(pct);
+          if (count >= PRELOAD_THRESHOLD) {
+            thresholdMet = true;
+            setIsReady(true);
+          }
+        }
       };
       img.onerror = () => {
         count++;
-        onLoaded?.(Math.round((count / FRAME_COUNT) * 100));
-        if (count === FRAME_COUNT) setAllLoaded(true);
+        if (!thresholdMet && count >= PRELOAD_THRESHOLD) {
+          thresholdMet = true;
+          setIsReady(true);
+          onLoaded?.(100);
+        }
       };
       img.src = `/sequence/frame_${i}.jpg`;
     }
     return () => {
       imagesRef.current.forEach((img) => { if (img) img.onload = null; });
     };
-  }, [allLoaded, onLoaded]);
+  }, [onLoaded]);
 
   // ── Resize canvas to exactly fill the window ──────────────────────────
   const resize = useCallback(() => {
@@ -64,7 +77,7 @@ export default React.memo(function ScrollCanvas({ progress, onLoaded }: ScrollCa
 
   // ── Continuous RAF loop ────────────────────────────────────────────────
   useEffect(() => {
-    if (!allLoaded) return;
+    if (!isReady) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -123,12 +136,12 @@ export default React.memo(function ScrollCanvas({ progress, onLoaded }: ScrollCa
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       window.removeEventListener('resize', resize);
     };
-  }, [allLoaded, progress, resize]);
+  }, [isReady, progress, resize]);
 
   return (
     <>
       {/* Canvas — sticky inside the hero wrapper; sections below occlude it */}
-      <canvas
+      <motion.canvas
         ref={canvasRef}
         style={{ 
           position: 'sticky', 
@@ -138,7 +151,8 @@ export default React.memo(function ScrollCanvas({ progress, onLoaded }: ScrollCa
           display: 'block', 
           width: '100%', 
           height: '100vh',
-          pointerEvents: 'none' 
+          pointerEvents: 'none',
+          opacity: opacity ?? 1
         }}
       />
 
